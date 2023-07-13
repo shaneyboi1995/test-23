@@ -82,33 +82,39 @@ class CharacterController extends AbstractController
     public function singleCharacter(int $id, ApiService $api): Response
     {
 
-        $character = $api->getCharacterProfile($id);
-        $episodes = [];
+        try {
+            $character = $api->getCharacterProfile($id);
+            $episodes = [];
 
-        foreach($character['episode'] as $episode) {
-            try {
-                // get the single episode
-                $episode = $api->getEpisodeData($episode);
-            } catch (DecodingExceptionInterface|TransportExceptionInterface|\Exception $e) {
-                return $this->render('error.html.twig', [
-                    'message' => $e->getMessage()
-                ]);
-            }
-            try {
-                // grouping the episode by their season for a better ui
-                $arrayIndex = $this->getSeasonsName($episode['episode']);
-                $episodes[$arrayIndex][$episode['id']] = $episode;
-            } catch (\Exception $e) {
-                return $this->render('error.html.twig', [
-                    'message' => $e->getMessage()
-                ]);
-            }
+            foreach($character['episode'] as $episode) {
+                try {
+                    // get the single episode
+                    $episode = $api->getEpisodeData($episode);
+                } catch (DecodingExceptionInterface|TransportExceptionInterface|\Exception $e) {
+                    return $this->render('error.html.twig', [
+                        'message' => $e->getMessage()
+                    ]);
+                }
+                try {
+                    // grouping the episode by their season for a better ui
+                    $arrayIndex = $this->getSeasonsName($episode['episode']);
+                    $episodes[$arrayIndex][$episode['id']] = $episode;
+                } catch (\Exception $e) {
+                    return $this->render('error.html.twig', [
+                        'message' => $e->getMessage()
+                    ]);
+                }
 
+            }
+            return $this->render('character/profile.html.twig', [
+                'character' => $character,
+                'seasons' => $episodes
+            ]);
+        } catch (DecodingExceptionInterface|TransportExceptionInterface $e) {
+            return $this->render('error.html.twig', [
+                'message' => $e->getMessage()
+            ]);
         }
-        return $this->render('character/profile.html.twig', [
-            'character' => $character,
-            'seasons' => $episodes
-        ]);
     }
 
     /**
