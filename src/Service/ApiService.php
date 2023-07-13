@@ -24,6 +24,25 @@ class ApiService
         return $this->createRequest(UrlEnum::CHARACTER, ['page' => $page]);
     }
 
+    public function getCharacterProfile(int $characterId): array
+    {
+        return $this->createRequest(UrlEnum::CHARACTER, ['character' => $characterId]);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws Exception
+     */
+    public function getEpisodeData(string $episode): array
+    {
+        if (preg_match('/\/(\d+)\/?$/', $episode, $matches)) {
+            return $this->createRequest(UrlEnum::EPISODES, ['episode' => $matches[1]]);
+        } else {
+           throw new Exception('Could not get the epsode id');
+        }
+    }
+
     /**
      * @throws Exception
      * @throws TransportExceptionInterface
@@ -33,6 +52,11 @@ class ApiService
     {
         // will throw exception on bad url
         $url = UrlEnum::getUrl($type);
+        if (is_array($options) && array_key_exists('character', $options)) {
+            $url .= "/" . $options['character'];
+        }else if (is_array($options) && array_key_exists('episode', $options)) {
+            $url .= "/" . $options['episode'];
+        }
         // set the page query param if there is one
         $clientOptions = [];
         if (is_array($options) && array_key_exists('page', $options)){
@@ -44,7 +68,7 @@ class ApiService
         $data = $this->client->request(
             'GET',
             $url,
-            ($clientOptions) ?: null
+            $clientOptions
         );
         // will throw exception if data content-type cannot be decoded
         $data = $data->toArray();

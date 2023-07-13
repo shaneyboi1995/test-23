@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Characters{% endblock %}
+
+{% block body %}
+<div class="container" style="margin: auto">
+    <div class="col-12">
+        <div class="card" style="width: 36rem;margin-bottom:20px">
+            <img src="{{ character.image }}" class="card-img-top" alt="Profile Image">
+            <div class="card-body">
+                <h5 class="card-title"><strong>Name: </strong>{{ character.name }}</h5>
+                <h5 class="card-title"><strong>Status: </strong>{{ character.status }}</h5>
+                <h5 class="card-title"><strong>Location: </strong>{{ character.location.name }}</h5>
+                <h5 class="card-title"><strong>Origin: </strong>{{ character.origin.name }}</h5>
+            </div>
+        </div>
+    </div>
+    {% for season,data in seasons %}
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <h3>{{ season }}</h3>
+                    {% for episode in data %}
+                        <div class="col-4" style="margin-bottom:20px">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Episode {{ loop.index }}</h5>
+                                    <p class="card-text">
+                                        Name: {{ episode.name }}
+                                    </p>
+                                    <p class="card-text">
+                                        Date Aired: {{ episode.air_date }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

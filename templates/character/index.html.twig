@@ -3,5 +3,65 @@
 {% block title %}Characters{% endblock %}
 
 {% block body %}
-
+    <div class="container" style="margin: auto">
+        <form class="row gy-2 gx-3 align-items-center">
+            <div class="col-auto">
+                <label class="visually-hidden" for="autoSizingInput">Name</label>
+                <input type="text" class="form-control" id="autoSizingInput" placeholder="Jane Doe">
+            </div>
+            <div class="col-auto">
+                <label class="visually-hidden" for="autoSizingInputGroup">Username</label>
+                <div class="input-group">
+                    <div class="input-group-text">@</div>
+                    <input type="text" class="form-control" id="autoSizingInputGroup" placeholder="Username">
+                </div>
+            </div>
+            <div class="col-auto">
+                <label class="visually-hidden" for="autoSizingSelect">Preference</label>
+                <select class="form-select" id="autoSizingSelect">
+                    <option selected>Choose...</option>
+                    <option value="1">One</option>
+                    <option value="2">Two</option>
+                    <option value="3">Three</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="autoSizingCheck">
+                    <label class="form-check-label" for="autoSizingCheck">
+                        Remember me
+                    </label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+       <div class="row">
+           {% for character in characters %}
+               <div class="col-4" style="margin-bottom:10px">
+                   <div class="card">
+                       <img src="{{ character.image }}" class="card-img-top" alt="Profile Image">
+                       <div class="card-body">
+                           <h5 class="card-title">{{ character.name }} - <small>{{ character.episode|length }} Appearances</small></h5>
+                           <a href="{{ path('app_character_profile', { id: character.id  } ) }}" class="btn btn-primary">View Profile</a>
+                       </div>
+                   </div>
+               </div>
+           {% endfor %}
+       </div>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                {% if currentPage is not same as(1) %}
+                    <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage-1} ) }}">Previous</a></li>
+                    <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage-1} ) }}">{{ currentPage-1 }}</a></li>
+                {% endif %}
+                <li class="page-item active"><a class="page-link" href="#">{{ currentPage }}</a></li>
+                {% if currentPage is not same as(pagination.pages) %}
+                    <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage+1} ) }}">{{ currentPage+1 }}</a></li>
+                    <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage+1} ) }}">Next </a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 {% endblock %}
