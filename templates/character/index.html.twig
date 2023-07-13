@@ -5,7 +5,15 @@
 {% block body %}
     <div class="container" style="margin: auto">
         <div class="row">
-            {{ form(filterForm) }}
+            <div class="col-4">
+                {{ form_start(filterForm) }}
+                {{ form_label(filterForm.name) }}
+                {{ form_widget(filterForm.name, { value: name }) }}
+                {{ form_label(filterForm.status) }}
+                {{ form_widget(filterForm.status, { value: status }) }}
+                {{ form_widget(filterForm.submit) }}
+                {{ form_end(filterForm) }}q
+            </div>
         </div>
         <div class="row">
            {% for character in characters %}
@@ -22,11 +30,11 @@
        </div>
         <nav aria-label="Page navigation example">
             <ul class="pagination">
-                {% if currentPage is not same as('1') %}
+                {% if currentPage is not same as(1) %}
                     <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage-1, name: name, status:status} ) }}">Previous</a></li>
                 {% endif %}
                 <li class="page-item active"><a class="page-link" href="#">{{ currentPage }}</a></li>
-                {% if currentPage is not same as('') %}
+                {% if currentPage is not same as(totalPages) %}
                     <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage + 1, name: name, status:status} ) }}">{{ currentPage+1 }}</a></li>
                     <li class="page-item"><a class="page-link" href="{{ path('app_character_listing', { page: currentPage + 1, name: name, status:status} ) }}">Next</a></li>
                 {% endif %}

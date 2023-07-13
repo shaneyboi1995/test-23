@@ -24,22 +24,28 @@ class CharacterController extends AbstractController
         $filterForm = $this->createForm(FilterFormType::class);
         $filterForm->handleRequest($request);
 
-        $requestOptions = [
-            'page' => $request->query->get('page', 1)
-        ];
 
         // lets see if any filters were set
         if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             $formData = $filterForm->getData();
+
+            // need to reset the page otherwise get an error if you deep in to the pagination link but then select a filter
+            $requestOptions = [
+                'page' => 1
+            ];
+
             if ($formData['name']) {
                 $requestOptions['name'] = $formData['name'];
             }
             if ($formData['status']) {
                 $requestOptions['status'] = $formData['status'];
             }
-//            dd($requestOptions);
+
         }else {
             // the filter/search data is coming from the pagination link
+            $requestOptions = [
+                'page' => $request->query->get('page', 1)
+            ];
             if ($request->query->get('name')) {
                 $requestOptions['name'] = $request->query->get('name');
             }
@@ -49,18 +55,13 @@ class CharacterController extends AbstractController
 
         }
 
-//        if ($request->query->get('page') === '2'){
-//            dd('fgfgfsggs');
-//        }
-
         try {
             // get the character results
             $characters = $api->getCharacters($requestOptions);
-
             return $this->render('character/index.html.twig', [
                 'characters' => $characters['results'],
-                'totalPage' => $characters['info']['pages'],
-                'currentPage' => $request->query->get('page', 1),
+                'totalPages' => (int)$characters['info']['pages'],
+                'currentPage' => (int)$request->query->get('page', 1),
                 'filterForm' => $filterForm,
                 'name' => (array_key_exists('name', $requestOptions)) ? $requestOptions['name'] : null,
                 'status' => (array_key_exists('status', $requestOptions)) ? $requestOptions['status'] : null
@@ -111,6 +112,8 @@ class CharacterController extends AbstractController
     }
 
     /**
+     * @param string $episode
+     * @return string
      * @throws \Exception
      */
     private function getSeasonsName(string $episode): string
