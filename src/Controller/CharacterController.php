@@ -23,8 +23,6 @@ class CharacterController extends AbstractController
     {
         $filterForm = $this->createForm(FilterFormType::class);
         $filterForm->handleRequest($request);
-
-
         // lets see if any filters were set
         if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             $formData = $filterForm->getData();
@@ -54,14 +52,14 @@ class CharacterController extends AbstractController
             }
 
         }
-
+        $currentPage = (int)$requestOptions['page'];
         try {
             // get the character results
             $characters = $api->getCharacters($requestOptions);
             return $this->render('character/index.html.twig', [
                 'characters' => $characters['results'],
                 'totalPages' => (int)$characters['info']['pages'],
-                'currentPage' => (int)$request->query->get('page', 1),
+                'currentPage' => $currentPage,
                 'filterForm' => $filterForm,
                 'name' => (array_key_exists('name', $requestOptions)) ? $requestOptions['name'] : null,
                 'status' => (array_key_exists('status', $requestOptions)) ? $requestOptions['status'] : null

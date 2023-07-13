@@ -12,9 +12,11 @@ class ApiService
 {
     /**
      * @param HttpClientInterface $client
+     * @param RedisService $redis
      */
     public function __construct(
-        private readonly HttpClientInterface $client
+        private readonly HttpClientInterface $client,
+        private readonly RedisService $redis
     ){}
 
     /**
@@ -69,6 +71,8 @@ class ApiService
         // will throw exception on bad url
         $url = UrlEnum::getUrl($type);
         $clientOptions = [];
+
+
         // handle any options
         if (is_array($options)) {
             if (array_key_exists('character', $options)) {
@@ -90,14 +94,21 @@ class ApiService
                 $clientOptions['query']['status'] = $options['status'];
             }
         }
-        // will throw when any error happens at the transport level.
-        $data = $this->client->request(
-            'GET',
-            $url,
-            $clientOptions
-        );
-        // will throw exception if data content-type cannot be decoded
-        $data = $data->toArray();
+        // build key for redis cache
+        $key = md5($url) . md5(json_encode($clientOptions));
+
+        if ($this->redis->has($key)){
+            $data = $this->redis->getArray($key);
+        } else {
+            $data = $this->client->request(
+                'GET',
+                $url,
+                $clientOptions
+            );
+            // will throw exception if data content-type cannot be decoded
+            $data = $data->toArray();
+            $this->redis->setArray($key, $data);
+        }
 
         return $data;
     }
