@@ -5,7 +5,7 @@ namespace App\Enum;
 enum UrlEnum: string
 {
 
-    case BASE = 'https://rickanddmortyapi.com/api';
+    case BASE = 'https://rickandmortyapi.com/api';
 
     case CHARACTER = "character";
 

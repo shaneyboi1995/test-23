@@ -10,26 +10,39 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ApiService
 {
+    /**
+     * @param HttpClientInterface $client
+     */
     public function __construct(
         private readonly HttpClientInterface $client
     ){}
 
     /**
+     * @param array $options
+     * @return array
      * @throws Exception
      * @throws TransportExceptionInterface
      * @throws DecodingExceptionInterface
      */
-    public function getCharacters(?string $page = null): array
+    public function getCharacters(array $options): array
     {
-        return $this->createRequest(UrlEnum::CHARACTER, ['page' => $page]);
+        return $this->createRequest(UrlEnum::CHARACTER, $options);
     }
 
+    /**
+     * @param int $characterId
+     * @return array
+     * @throws TransportExceptionInterface
+     * @throws DecodingExceptionInterface
+     */
     public function getCharacterProfile(int $characterId): array
     {
         return $this->createRequest(UrlEnum::CHARACTER, ['character' => $characterId]);
     }
 
     /**
+     * @param string $episode
+     * @return array
      * @throws TransportExceptionInterface
      * @throws DecodingExceptionInterface
      * @throws Exception
@@ -44,6 +57,9 @@ class ApiService
     }
 
     /**
+     * @param UrlEnum $type
+     * @param array|null $options
+     * @return array
      * @throws Exception
      * @throws TransportExceptionInterface
      * @throws DecodingExceptionInterface
@@ -52,17 +68,27 @@ class ApiService
     {
         // will throw exception on bad url
         $url = UrlEnum::getUrl($type);
-        if (is_array($options) && array_key_exists('character', $options)) {
-            $url .= "/" . $options['character'];
-        }else if (is_array($options) && array_key_exists('episode', $options)) {
-            $url .= "/" . $options['episode'];
-        }
-        // set the page query param if there is one
         $clientOptions = [];
-        if (is_array($options) && array_key_exists('page', $options)){
-            $clientOptions['query'] = [
-                'page' => $options['page']
-            ];
+        // handle any options
+        if (is_array($options)) {
+            if (array_key_exists('character', $options)) {
+                $url .= "/" . $options['character'];
+            }else if (array_key_exists('episode', $options)) {
+                $url .= "/" . $options['episode'];
+            }
+
+            if (array_key_exists('page', $options)){
+                $clientOptions['query'] = [
+                    'page' => $options['page'],
+                ];
+            }
+
+            if (array_key_exists('name', $options)){
+                $clientOptions['query']['name'] = $options['name'];
+            }
+            if (array_key_exists('status', $options)){
+                $clientOptions['query']['status'] = $options['status'];
+            }
         }
         // will throw when any error happens at the transport level.
         $data = $this->client->request(
