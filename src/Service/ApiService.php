@@ -54,7 +54,7 @@ class ApiService
         if (preg_match('/\/(\d+)\/?$/', $episode, $matches)) {
             return $this->createRequest(UrlEnum::EPISODES, ['episode' => $matches[1]]);
         } else {
-           throw new Exception('Could not get the epsode id');
+           throw new Exception('Could not get the episode id');
         }
     }
 

@@ -1,9 +1,21 @@
 {% extends 'base.html.twig' %}
-    {% block body %}
-        <div class="container" style="margin: auto">
-            <div class="h-100 p-5 bg-light border rounded-3 mt-5">
-                <h1 class="display-5 fw-bold">Pickle Rick caught an error.</h1>
-                <p class="col-md-8 fs-4">{{ message }}</p>
-            </div>
+{% block body %}
+    <div class="container" style="margin: auto">
+        <div class="h-100 p-5 bg-light border rounded-3 mt-5">
+            <h1 class="display-5 fw-bold">Pickle Rick caught an error.</h1>
+            <p class="col-md-8 fs-4">{{ message }}</p>
+            <button id="goHome" class="btn btn-danger mt-5">Take Me Home</button>
         </div>
-    {% endblock %}
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+        $( document ).ready(function() {
+            $('#goHome').on('click', function(event){
+                event.preventDefault()
+                window.location = '/'
+            });
+        });
+    </script>
+{% endblock %}

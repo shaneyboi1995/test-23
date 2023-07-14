@@ -12,6 +12,7 @@
                 {{ form_label(filterForm.status) }}
                 {{ form_widget(filterForm.status, { value: status }) }}
                 {{ form_widget(filterForm.submit) }}
+                <button id="clearForm" class="btn btn-danger">Clear</button>
                 {{ form_end(filterForm) }}
             </div>
         </div>
@@ -41,4 +42,15 @@
             </ul>
         </nav>
     </div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+        $( document ).ready(function() {
+            $('#clearForm').on('click', function(event){
+                event.preventDefault()
+                window.location = '/'
+            });
+        });
+    </script>
 {% endblock %}

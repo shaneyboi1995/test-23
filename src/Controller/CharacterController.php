@@ -21,52 +21,54 @@ class CharacterController extends AbstractController
     #[Route('/', name: 'app_character_listing', methods: ['GET', 'POST'])]
     public function index(Request $request, ApiService $api): Response
     {
-        $filterForm = $this->createForm(FilterFormType::class);
-        $filterForm->handleRequest($request);
-        // lets see if any filters were set
-        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
-            $formData = $filterForm->getData();
-
-            // need to reset the page otherwise get an error if you deep in to the pagination link but then select a filter
-            $requestOptions = [
-                'page' => 1
-            ];
-
-            if ($formData['name']) {
-                $requestOptions['name'] = $formData['name'];
-            }
-            if ($formData['status']) {
-                $requestOptions['status'] = $formData['status'];
-            }
-
-        }else {
-            // the filter/search data is coming from the pagination link
-            $requestOptions = [
-                'page' => $request->query->get('page', 1)
-            ];
-            if ($request->query->get('name')) {
-                $requestOptions['name'] = $request->query->get('name');
-            }
-            if ($request->query->get('status')) {
-                $requestOptions['status'] = $request->query->get('status');
-            }
-
-        }
-        $currentPage = (int)$requestOptions['page'];
         try {
+            $filterForm = $this->createForm(FilterFormType::class);
+            $filterForm->handleRequest($request);
+            $requestOptions = [];
+            // lets see if any filters were set
+            if ($filterForm->isSubmitted() && $filterForm->isValid()) {
+                $formData = $filterForm->getData();
+
+                // need to reset the page otherwise get an error if you deep in to the pagination link but then select a filter
+                $requestOptions['page'] = 1;
+
+                if ($formData['name']) {
+                    $requestOptions['name'] = $formData['name'];
+                }
+                if ($formData['status']) {
+                    $requestOptions['status'] = $formData['status'];
+                }
+
+            }else {
+                // the filter/search data is coming from the pagination link
+                $requestOptions['page'] = $request->query->get('page', 1);
+                if ($request->query->get('name')) {
+                    $requestOptions['name'] = $request->query->get('name');
+                }
+                if ($request->query->get('status')) {
+                    $requestOptions['status'] = $request->query->get('status');
+                }
+
+            }
             // get the character results
             $characters = $api->getCharacters($requestOptions);
             return $this->render('character/index.html.twig', [
                 'characters' => $characters['results'],
                 'totalPages' => (int)$characters['info']['pages'],
-                'currentPage' => $currentPage,
+                'currentPage' => (int)$requestOptions['page'],
                 'filterForm' => $filterForm,
                 'name' => (array_key_exists('name', $requestOptions)) ? $requestOptions['name'] : null,
                 'status' => (array_key_exists('status', $requestOptions)) ? $requestOptions['status'] : null
             ]);
         } catch (DecodingExceptionInterface|TransportExceptionInterface|\Exception $e) {
+            if (($e instanceof \Exception && $e->getCode() === 404) && array_key_exists('name', $requestOptions)){
+                // change up the message if it's a 404, the endpoint will return this if a user enters an incorrect character name
+                $message = sprintf('No Results could be found with the name: %s', $requestOptions['name']);
+            } else {
+                $message = $e->getMessage();
+            }
             return $this->render('error.html.twig', [
-                'message' => $e->getMessage()
+                'message' => $message
             ]);
         }
     }
@@ -85,30 +87,19 @@ class CharacterController extends AbstractController
             $episodes = [];
 
             foreach($character['episode'] as $episode) {
-                try {
-                    // get the single episode
-                    $episode = $api->getEpisodeData($episode);
-                } catch (DecodingExceptionInterface|TransportExceptionInterface|\Exception $e) {
-                    return $this->render('error.html.twig', [
-                        'message' => $e->getMessage()
-                    ]);
-                }
-                try {
-                    // grouping the episode by their season for a better ui
-                    $arrayIndex = $this->getSeasonsName($episode['episode']);
-                    $episodes[$arrayIndex][$episode['id']] = $episode;
-                } catch (\Exception $e) {
-                    return $this->render('error.html.twig', [
-                        'message' => $e->getMessage()
-                    ]);
-                }
+                // get the single episode
+                $episode = $api->getEpisodeData($episode);
+
+                // grouping the episode by their season for a better ui
+                $arrayIndex = $this->getSeasonsName($episode['episode']);
+                $episodes[$arrayIndex][$episode['id']] = $episode;
 
             }
             return $this->render('character/profile.html.twig', [
                 'character' => $character,
                 'seasons' => $episodes
             ]);
-        } catch (DecodingExceptionInterface|TransportExceptionInterface $e) {
+        } catch (DecodingExceptionInterface|TransportExceptionInterface|\Exception $e) {
             return $this->render('error.html.twig', [
                 'message' => $e->getMessage()
             ]);
