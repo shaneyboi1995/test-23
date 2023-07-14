@@ -53,3 +53,10 @@ Please keep commiting changes as you go.
 ## Copyright
 All trademarks as the property of their respective owners.
 
+## Project setup
+- Composer install
+- setup webserver using either apache or nginx
+- app has a dependency on redis so an redis instance needs setting up
+- set the redis details in the .env file
+- sit back, relax and enjoy!
+
